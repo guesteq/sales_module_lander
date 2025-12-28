@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import emailjs from '@emailjs/browser'
 
 function App() {
   const [formData, setFormData] = useState({
@@ -8,11 +9,46 @@ function App() {
     email: '',
     message: ''
   })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitStatus, setSubmitStatus] = useState(null) // 'success', 'error', or null
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    // Handle form submission
-    console.log('Form submitted:', formData)
+    setIsSubmitting(true)
+    setSubmitStatus(null)
+
+    try {
+      // EmailJS configuration
+      const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID || 'service_zpz89bk'
+      const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID || 'template_b0w525d'
+      const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY || 'iDxH8L_oOfxK9KbIX'
+
+      const templateParams = {
+        to_email: 'ryan@guesteq.com',
+        from_name: formData.name,
+        from_email: formData.email,
+        role: formData.role,
+        company: formData.company,
+        message: formData.message || 'No message provided',
+        reply_to: formData.email,
+      }
+
+      await emailjs.send(serviceId, templateId, templateParams, publicKey)
+      
+      setSubmitStatus('success')
+      setFormData({
+        name: '',
+        role: '',
+        company: '',
+        email: '',
+        message: ''
+      })
+    } catch (error) {
+      console.error('Error sending email:', error)
+      setSubmitStatus('error')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const handleChange = (e) => {
@@ -445,11 +481,22 @@ function App() {
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"
                   />
                 </div>
+                {submitStatus === 'success' && (
+                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg text-green-800">
+                    <p className="font-medium">Thank you! We've received your request and will be in touch shortly.</p>
+                  </div>
+                )}
+                {submitStatus === 'error' && (
+                  <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-800">
+                    <p className="font-medium">Something went wrong. Please try again or contact us directly at ryan@guesteq.com</p>
+                  </div>
+                )}
                 <button
                   type="submit"
-                  className="w-full px-8 py-4 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-md"
+                  disabled={isSubmitting}
+                  className="w-full px-8 py-4 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-md disabled:bg-blue-400 disabled:cursor-not-allowed"
                 >
-                  Request a Demo
+                  {isSubmitting ? 'Sending...' : 'Request a Demo'}
                 </button>
               </form>
             </div>
