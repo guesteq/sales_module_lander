@@ -1,7 +1,11 @@
-import { useState } from 'react'                                                                                                                                                            
+import { useEffect, useState } from 'react'
 import emailjs from '@emailjs/browser'                                                                                                                                                      
+import CompareGenericCrmPage from './pages/CompareGenericCrmPage'
                                                                                                                                                                                             
 function App() {                                                                                                                                                                            
+  const currentPath = window.location.pathname.replace(/\/+$/, '') || '/'
+  const isComparisonPage = currentPath === '/compare/generic-crm'
+
   const [formData, setFormData] = useState({                                                                                                                                                
     name: '',                                                                                                                                                                               
     role: '',                                                                                                                                                                               
@@ -56,6 +60,34 @@ function App() {
       [e.target.name]: e.target.value                                                                                                                                                       
     })                                                                                                                                                                                      
   }                                                                                                                                                                                         
+
+  useEffect(() => {
+    let descriptionTag = document.querySelector('meta[name="description"]')
+    if (!descriptionTag) {
+      descriptionTag = document.createElement('meta')
+      descriptionTag.setAttribute('name', 'description')
+      document.head.appendChild(descriptionTag)
+    }
+
+    if (isComparisonPage) {
+      document.title = 'GuestEQ Sales vs Generic CRM for Hotel Group Business'
+      descriptionTag.setAttribute(
+        'content',
+        'Compare GuestEQ Sales to generic CRM tools for hotel group business. See which approach improves follow-up consistency, multi-property visibility, and team adoption.'
+      )
+      return
+    }
+
+    document.title = 'GuestEQ - Sales Operating System for Hotels'
+    descriptionTag.setAttribute(
+      'content',
+      'GuestEQ helps hotel sales teams manage group leads, activity, follow-up, and visibility across every property in one workflow.'
+    )
+  }, [isComparisonPage])
+
+  if (isComparisonPage) {
+    return <CompareGenericCrmPage />
+  }
                                                                                                                                                                                             
   return (                                                                                                                                                                                  
     <div className="min-h-screen bg-white">                                                                                                                                                 
